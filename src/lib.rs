@@ -23,6 +23,12 @@ const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
 const BALL_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
 
 #[derive(Component)]
+pub struct Player;
+
+#[derive(Component)]
+pub struct Computer;
+
+#[derive(Component)]
 pub struct Paddle;
 
 #[derive(Component)]
@@ -108,6 +114,19 @@ pub fn setup(
         },
         Paddle,
         Collider,
+        Player,
+    ));
+
+    commands.spawn((
+        Sprite::from_color(PADDLE_COLOR, Vec2::ONE),
+        Transform {
+            translation: Vec3::new(-paddle_x, 0., 0.),
+            scale: PADDLE_SIZE.extend(1.),
+            ..default()
+        },
+        Paddle,
+        Collider,
+        Computer,
     ));
 
     commands.spawn(WallBundle::new(WallLocation::Left, LEFT_WALL_COLOR));
@@ -127,7 +146,7 @@ pub fn setup(
 
 pub fn move_paddle(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut paddle_transform: Single<&mut Transform, With<Paddle>>,
+    mut paddle_transform: Single<&mut Transform, (With<Paddle>, With<Player>)>,
     time: Res<Time>,
 ) {
     let mut direction = 0.0;
