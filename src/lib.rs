@@ -48,13 +48,10 @@ pub fn move_paddle(
         direction += 1.0;
     }
 
-    // Calculate the new horizontal paddle position based on player input
     let new_paddle_position =
         paddle_transform.translation.y + direction * PADDLE_SPEED * time.delta_secs();
 
-    // Update the paddle position,
-    // making sure it doesn't cause the paddle to leave the arena
-    let left_bound = (WALL_Y * -1.) + WALL_THICKNESS / 2.0 + PADDLE_SIZE.x / 2.0 + PADDLE_Y_MARGIN;
-    let right_bound = WALL_Y - WALL_THICKNESS / 2.0 - PADDLE_SIZE.x / 2.0 - PADDLE_Y_MARGIN;
-    paddle_transform.translation.y = new_paddle_position.clamp(left_bound, right_bound);
+    let top_bound = (WALL_Y * -1.) + WALL_THICKNESS / 2.0 + PADDLE_SIZE.x / 2.0 + PADDLE_Y_MARGIN;
+    let bottom_bound = WALL_Y - WALL_THICKNESS / 2.0 - PADDLE_SIZE.x / 2.0 - PADDLE_Y_MARGIN;
+    paddle_transform.translation.y = new_paddle_position.clamp(top_bound, bottom_bound);
 }
