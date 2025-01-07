@@ -181,7 +181,7 @@ pub fn move_computer_paddle(
 }
 
 fn reposition_paddle<T: bevy::prelude::Component>(
-    paddle_transform: &mut Single<'_, &mut Transform, (With<Paddle>, With<T>)>,
+    paddle_transform: &mut Single<&mut Transform, (With<Paddle>, With<T>)>,
     time: Res<Time>,
     direction: f32,
 ) {
