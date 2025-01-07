@@ -4,7 +4,6 @@ const PADDLE_SIZE: Vec2 = Vec2::new(20., 120.);
 const PADDLE_COLOR: Color = Color::srgb(0.898, 0.784, 0.565);
 const PADDLE_SPEED: f32 = 500.;
 const PADDLE_X_MARGIN: f32 = 10.;
-const PADDLE_Y_MARGIN: f32 = 10.;
 
 const WALL_X: f32 = 350.;
 const WALL_Y: f32 = 450.;
@@ -113,7 +112,7 @@ pub fn move_paddle(
     let new_paddle_position =
         paddle_transform.translation.y + direction * PADDLE_SPEED * time.delta_secs();
 
-    let bottom_bound = -WALL_Y + WALL_THICKNESS / 2. + PADDLE_SIZE.x / 2. + PADDLE_Y_MARGIN;
-    let top_bound = WALL_Y - WALL_THICKNESS / 2. - PADDLE_SIZE.x / 2. - PADDLE_Y_MARGIN;
+    let bottom_bound = -WALL_Y + WALL_THICKNESS / 2. + PADDLE_SIZE.y / 2.;
+    let top_bound = WALL_Y - WALL_THICKNESS / 2. - PADDLE_SIZE.y / 2.;
     paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
 }
