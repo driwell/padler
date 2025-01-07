@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use padler::{apply_velocity, check_for_collisions, move_paddle, setup, CollisionEvent};
+use padler::{
+    apply_velocity, check_for_collisions, move_computer_paddle, move_paddle, setup, CollisionEvent,
+};
 
 fn main() {
     App::new()
@@ -9,7 +11,12 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(
             FixedUpdate,
-            (apply_velocity, move_paddle, check_for_collisions),
+            (
+                apply_velocity,
+                move_paddle,
+                move_computer_paddle,
+                check_for_collisions,
+            ),
         )
         .run();
 }

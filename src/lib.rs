@@ -167,6 +167,29 @@ pub fn move_paddle(
     paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
 }
 
+pub fn move_computer_paddle(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut paddle_transform: Single<&mut Transform, (With<Paddle>, With<Computer>)>,
+    time: Res<Time>,
+) {
+    let mut direction = 0.0;
+
+    if keyboard_input.pressed(KeyCode::KeyS) {
+        direction -= 1.0;
+    }
+
+    if keyboard_input.pressed(KeyCode::KeyW) {
+        direction += 1.0;
+    }
+
+    let new_paddle_position =
+        paddle_transform.translation.y + direction * PADDLE_SPEED * time.delta_secs();
+
+    let bottom_bound = -WALL_Y + WALL_THICKNESS / 2. + PADDLE_SIZE.y / 2.;
+    let top_bound = WALL_Y - WALL_THICKNESS / 2. - PADDLE_SIZE.y / 2.;
+    paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
+}
+
 pub fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut transform, velocity) in &mut query {
         transform.translation.x += velocity.x * time.delta_secs();
