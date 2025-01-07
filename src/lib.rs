@@ -9,6 +9,10 @@ const PADDLE_Y_MARGIN: f32 = 10.;
 const WALL_X: f32 = 350.;
 const WALL_Y: f32 = 450.;
 const WALL_THICKNESS: f32 = 10.;
+const LEFT_WALL_COLOR: Color = Color::srgb(1., 0., 0.);
+const RIGHT_WALL_COLOR: Color = Color::srgb(0., 1., 0.);
+const BOTTOM_WALL_COLOR: Color = Color::srgb(0., 0., 1.);
+const TOP_WALL_COLOR: Color = Color::srgb(1., 0.5, 0.);
 
 #[derive(Component)]
 pub struct Paddle;
@@ -16,10 +20,63 @@ pub struct Paddle;
 #[derive(Component)]
 struct Collider;
 
+#[derive(Bundle)]
+struct WallBundle {
+    sprite: Sprite,
+    transform: Transform,
+    collider: Collider,
+}
+
+enum WallLocation {
+    Left,
+    Right,
+    Bottom,
+    Top,
+}
+
+impl WallLocation {
+    fn position(&self) -> Vec2 {
+        match self {
+            WallLocation::Left => Vec2::new(-WALL_X, 0.),
+            WallLocation::Right => Vec2::new(WALL_X, 0.),
+            WallLocation::Bottom => Vec2::new(0., -WALL_Y),
+            WallLocation::Top => Vec2::new(0., WALL_Y),
+        }
+    }
+
+    fn size(&self) -> Vec2 {
+        let arena_height = WALL_Y - -WALL_Y;
+        let arena_width = WALL_X - -WALL_X;
+
+        match self {
+            WallLocation::Left | WallLocation::Right => {
+                Vec2::new(WALL_THICKNESS, arena_height + WALL_THICKNESS)
+            }
+            WallLocation::Bottom | WallLocation::Top => {
+                Vec2::new(arena_width + WALL_THICKNESS, WALL_THICKNESS)
+            }
+        }
+    }
+}
+
+impl WallBundle {
+    fn new(location: WallLocation, color: Color) -> WallBundle {
+        WallBundle {
+            sprite: Sprite::from_color(color, Vec2::ONE),
+            transform: Transform {
+                translation: location.position().extend(0.0),
+                scale: location.size().extend(1.0),
+                ..default()
+            },
+            collider: Collider,
+        }
+    }
+}
+
 pub fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
-    let paddle_x = (WALL_X * -1.) + PADDLE_X_MARGIN;
+    let paddle_x = -WALL_X + PADDLE_X_MARGIN;
 
     commands.spawn((
         Sprite::from_color(PADDLE_COLOR, Vec2::ONE),
@@ -31,6 +88,11 @@ pub fn setup(mut commands: Commands) {
         Paddle,
         Collider,
     ));
+
+    commands.spawn(WallBundle::new(WallLocation::Left, LEFT_WALL_COLOR));
+    commands.spawn(WallBundle::new(WallLocation::Right, RIGHT_WALL_COLOR));
+    commands.spawn(WallBundle::new(WallLocation::Bottom, BOTTOM_WALL_COLOR));
+    commands.spawn(WallBundle::new(WallLocation::Top, TOP_WALL_COLOR));
 }
 
 pub fn move_paddle(
@@ -51,7 +113,7 @@ pub fn move_paddle(
     let new_paddle_position =
         paddle_transform.translation.y + direction * PADDLE_SPEED * time.delta_secs();
 
-    let top_bound = (WALL_Y * -1.) + WALL_THICKNESS / 2.0 + PADDLE_SIZE.x / 2.0 + PADDLE_Y_MARGIN;
-    let bottom_bound = WALL_Y - WALL_THICKNESS / 2.0 - PADDLE_SIZE.x / 2.0 - PADDLE_Y_MARGIN;
-    paddle_transform.translation.y = new_paddle_position.clamp(top_bound, bottom_bound);
+    let bottom_bound = -WALL_Y + WALL_THICKNESS / 2. + PADDLE_SIZE.x / 2. + PADDLE_Y_MARGIN;
+    let top_bound = WALL_Y - WALL_THICKNESS / 2. - PADDLE_SIZE.x / 2. - PADDLE_Y_MARGIN;
+    paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
 }
