@@ -13,7 +13,7 @@ const RIGHT_WALL_COLOR: Color = Color::srgb(0., 1., 0.);
 const BOTTOM_WALL_COLOR: Color = Color::srgb(0., 0., 1.);
 const TOP_WALL_COLOR: Color = Color::srgb(1., 0.5, 0.);
 
-const BALL_STARTING_POSITION: Vec3 = Vec3::new(0., 0., 0.);
+const BALL_STARTING_POSITION: Vec3 = Vec3::new(0., 0., 1.);
 const BALL_DIAMETER: f32 = 30.;
 const BALL_SPEED: f32 = 400.0;
 const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
@@ -82,7 +82,7 @@ impl WallBundle {
 struct Ball;
 
 #[derive(Component, Deref, DerefMut)]
-struct Velocity(Vec2);
+pub struct Velocity(Vec2);
 
 pub fn setup(
     mut commands: Commands,
@@ -140,4 +140,11 @@ pub fn move_paddle(
     let bottom_bound = -WALL_Y + WALL_THICKNESS / 2. + PADDLE_SIZE.y / 2.;
     let top_bound = WALL_Y - WALL_THICKNESS / 2. - PADDLE_SIZE.y / 2.;
     paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
+}
+
+pub fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+    for (mut transform, velocity) in &mut query {
+        transform.translation.x += velocity.x * time.delta_secs();
+        transform.translation.y += velocity.y * time.delta_secs();
+    }
 }
