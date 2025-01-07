@@ -3,6 +3,17 @@ use bevy::{
     prelude::*,
 };
 
+pub struct Game;
+
+impl Plugin for Game {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(Score(0));
+    }
+}
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct Score(usize);
+
 const PADDLE_SIZE: Vec2 = Vec2::new(20., 120.);
 const PADDLE_COLOR: Color = Color::srgb(0.898, 0.784, 0.565);
 const PADDLE_SPEED: f32 = 500.;
@@ -95,9 +106,6 @@ pub struct Ball;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Velocity(Vec2);
-
-#[derive(Resource, Deref, DerefMut)]
-pub struct Score(pub usize);
 
 pub fn setup(
     mut commands: Commands,
