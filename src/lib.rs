@@ -96,6 +96,9 @@ pub struct Ball;
 #[derive(Component, Deref, DerefMut)]
 pub struct Velocity(Vec2);
 
+#[derive(Resource, Deref, DerefMut)]
+pub struct Score(pub usize);
+
 pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -201,6 +204,7 @@ pub fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<T
 }
 
 pub fn check_for_collisions(
+    mut score: ResMut<Score>,
     ball_query: Single<(&mut Velocity, &Transform), With<Ball>>,
     collider_query: Query<(Entity, &Transform), With<Collider>>,
     mut collision_events: EventWriter<CollisionEvent>,
@@ -218,6 +222,9 @@ pub fn check_for_collisions(
 
         if let Some(collision) = collision {
             collision_events.send_default();
+
+            **score += 1;
+            println!("{}", **score);
 
             let mut reflect_x = false;
             let mut reflect_y = false;
