@@ -159,12 +159,7 @@ pub fn move_paddle(
         direction += 1.0;
     }
 
-    let new_paddle_position =
-        paddle_transform.translation.y + direction * PADDLE_SPEED * time.delta_secs();
-
-    let bottom_bound = -WALL_Y + WALL_THICKNESS / 2. + PADDLE_SIZE.y / 2.;
-    let top_bound = WALL_Y - WALL_THICKNESS / 2. - PADDLE_SIZE.y / 2.;
-    paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
+    reposition_paddle(&mut paddle_transform, time, direction);
 }
 
 pub fn move_computer_paddle(
@@ -182,6 +177,14 @@ pub fn move_computer_paddle(
         direction += 0.5;
     }
 
+    reposition_paddle(&mut paddle_transform, time, direction);
+}
+
+fn reposition_paddle<T: bevy::prelude::Component>(
+    paddle_transform: &mut Single<'_, &mut Transform, (With<Paddle>, With<T>)>,
+    time: Res<'_, Time>,
+    direction: f32,
+) {
     let new_paddle_position =
         paddle_transform.translation.y + direction * PADDLE_SPEED * time.delta_secs();
 
