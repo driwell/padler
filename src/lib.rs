@@ -168,17 +168,17 @@ pub fn move_paddle(
 }
 
 pub fn move_computer_paddle(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    ball_query: Single<&Transform, (With<Ball>, Without<Paddle>)>,
     mut paddle_transform: Single<&mut Transform, (With<Paddle>, With<Computer>)>,
     time: Res<Time>,
 ) {
+    let ball_transform = ball_query.into_inner();
+
     let mut direction = 0.0;
 
-    if keyboard_input.pressed(KeyCode::KeyS) {
+    if ball_transform.translation.y < paddle_transform.translation.y {
         direction -= 1.0;
-    }
-
-    if keyboard_input.pressed(KeyCode::KeyW) {
+    } else {
         direction += 1.0;
     }
 
