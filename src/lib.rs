@@ -13,6 +13,12 @@ const RIGHT_WALL_COLOR: Color = Color::srgb(0., 1., 0.);
 const BOTTOM_WALL_COLOR: Color = Color::srgb(0., 0., 1.);
 const TOP_WALL_COLOR: Color = Color::srgb(1., 0.5, 0.);
 
+const BALL_STARTING_POSITION: Vec3 = Vec3::new(0., 0., 0.);
+const BALL_DIAMETER: f32 = 30.;
+const BALL_SPEED: f32 = 400.0;
+const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
+const BALL_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
+
 #[derive(Component)]
 pub struct Paddle;
 
@@ -72,7 +78,17 @@ impl WallBundle {
     }
 }
 
-pub fn setup(mut commands: Commands) {
+#[derive(Component)]
+struct Ball;
+
+#[derive(Component, Deref, DerefMut)]
+struct Velocity(Vec2);
+
+pub fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     commands.spawn(Camera2d);
 
     let paddle_x = -WALL_X + PADDLE_X_MARGIN;
@@ -92,6 +108,15 @@ pub fn setup(mut commands: Commands) {
     commands.spawn(WallBundle::new(WallLocation::Right, RIGHT_WALL_COLOR));
     commands.spawn(WallBundle::new(WallLocation::Bottom, BOTTOM_WALL_COLOR));
     commands.spawn(WallBundle::new(WallLocation::Top, TOP_WALL_COLOR));
+
+    commands.spawn((
+        Mesh2d(meshes.add(Circle::default())),
+        MeshMaterial2d(materials.add(BALL_COLOR)),
+        Transform::from_translation(BALL_STARTING_POSITION)
+            .with_scale(Vec2::splat(BALL_DIAMETER).extend(1.)),
+        Ball,
+        Velocity(INITIAL_BALL_DIRECTION.normalize() * BALL_SPEED),
+    ));
 }
 
 pub fn move_paddle(
