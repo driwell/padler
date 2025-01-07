@@ -177,9 +177,9 @@ pub fn move_computer_paddle(
     let mut direction = 0.0;
 
     if ball_transform.translation.y < paddle_transform.translation.y {
-        direction -= 1.0;
+        direction -= 0.5;
     } else {
-        direction += 1.0;
+        direction += 0.5;
     }
 
     let new_paddle_position =
