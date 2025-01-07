@@ -8,11 +8,22 @@ pub struct Game;
 impl Plugin for Game {
     fn build(&self, app: &mut App) {
         app.insert_resource(Score(0));
+        app.add_event::<CollisionEvent>();
+        app.add_systems(Startup, setup);
+        app.add_systems(
+            FixedUpdate,
+            (
+                apply_velocity,
+                move_paddle,
+                move_computer_paddle,
+                check_for_collisions,
+            ),
+        );
     }
 }
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct Score(usize);
+struct Score(usize);
 
 const PADDLE_SIZE: Vec2 = Vec2::new(20., 120.);
 const PADDLE_COLOR: Color = Color::srgb(0.898, 0.784, 0.565);
@@ -34,19 +45,19 @@ const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
 const BALL_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
 
 #[derive(Component)]
-pub struct Player;
+struct Player;
 
 #[derive(Component)]
-pub struct Computer;
+struct Computer;
 
 #[derive(Component)]
-pub struct Paddle;
+struct Paddle;
 
 #[derive(Component)]
-pub struct Collider;
+struct Collider;
 
 #[derive(Event, Default)]
-pub struct CollisionEvent;
+struct CollisionEvent;
 
 #[derive(Bundle)]
 struct WallBundle {
@@ -102,12 +113,12 @@ impl WallBundle {
 }
 
 #[derive(Component)]
-pub struct Ball;
+struct Ball;
 
 #[derive(Component, Deref, DerefMut)]
-pub struct Velocity(Vec2);
+struct Velocity(Vec2);
 
-pub fn setup(
+fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -155,7 +166,7 @@ pub fn setup(
     ));
 }
 
-pub fn move_paddle(
+fn move_paddle(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut paddle_transform: Single<&mut Transform, (With<Paddle>, With<Player>)>,
     time: Res<Time>,
@@ -173,7 +184,7 @@ pub fn move_paddle(
     reposition_paddle(&mut paddle_transform, time, direction);
 }
 
-pub fn move_computer_paddle(
+fn move_computer_paddle(
     ball_query: Single<&Transform, (With<Ball>, Without<Paddle>)>,
     mut paddle_transform: Single<&mut Transform, (With<Paddle>, With<Computer>)>,
     time: Res<Time>,
@@ -204,14 +215,14 @@ fn reposition_paddle<T: bevy::prelude::Component>(
     paddle_transform.translation.y = new_paddle_position.clamp(bottom_bound, top_bound);
 }
 
-pub fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut transform, velocity) in &mut query {
         transform.translation.x += velocity.x * time.delta_secs();
         transform.translation.y += velocity.y * time.delta_secs();
     }
 }
 
-pub fn check_for_collisions(
+fn check_for_collisions(
     mut score: ResMut<Score>,
     ball_query: Single<(&mut Velocity, &Transform), With<Ball>>,
     collider_query: Query<(Entity, &Transform), With<Collider>>,
@@ -256,7 +267,7 @@ pub fn check_for_collisions(
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum Collision {
+enum Collision {
     Left,
     Right,
     Top,
