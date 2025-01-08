@@ -23,7 +23,7 @@ impl Plugin for Game {
 }
 
 #[derive(Resource, Deref, DerefMut)]
-struct Score(usize);
+struct Score(i32);
 
 const PADDLE_SIZE: Vec2 = Vec2::new(20., 120.);
 const PADDLE_COLOR: Color = Color::srgb(0.898, 0.784, 0.565);
@@ -113,6 +113,12 @@ impl WallBundle {
 }
 
 #[derive(Component)]
+struct PlayerGoal;
+
+#[derive(Component)]
+struct ComputerGoal;
+
+#[derive(Component)]
 struct Ball;
 
 #[derive(Component, Deref, DerefMut)]
@@ -151,8 +157,14 @@ fn setup(
         Computer,
     ));
 
-    commands.spawn(WallBundle::new(WallLocation::Left, LEFT_WALL_COLOR));
-    commands.spawn(WallBundle::new(WallLocation::Right, RIGHT_WALL_COLOR));
+    commands.spawn((
+        PlayerGoal,
+        WallBundle::new(WallLocation::Left, LEFT_WALL_COLOR),
+    ));
+    commands.spawn((
+        ComputerGoal,
+        WallBundle::new(WallLocation::Right, RIGHT_WALL_COLOR),
+    ));
     commands.spawn(WallBundle::new(WallLocation::Bottom, BOTTOM_WALL_COLOR));
     commands.spawn(WallBundle::new(WallLocation::Top, TOP_WALL_COLOR));
 
@@ -225,24 +237,26 @@ fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>
 fn check_for_collisions(
     mut score: ResMut<Score>,
     ball_query: Single<(&mut Velocity, &Transform), With<Ball>>,
-    collider_query: Query<(Entity, &Transform), With<Collider>>,
+    collider_query: Query<(Entity, &Transform, Option<&PlayerGoal>), With<Collider>>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
     let (mut ball_velocity, ball_transform) = ball_query.into_inner();
 
-    for collider_transform in &collider_query {
+    for (_, collider_transform, player_wall) in &collider_query {
         let collision = ball_collision(
             BoundingCircle::new(ball_transform.translation.truncate(), BALL_DIAMETER / 2.),
             Aabb2d::new(
-                collider_transform.1.translation.truncate(),
-                collider_transform.1.scale.truncate() / 2.,
+                collider_transform.translation.truncate(),
+                collider_transform.scale.truncate() / 2.,
             ),
         );
 
         if let Some(collision) = collision {
             collision_events.send_default();
 
-            **score += 1;
+            if player_wall.is_some() {
+                **score -= 1;
+            }
             println!("{}", **score);
 
             let mut reflect_x = false;
