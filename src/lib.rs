@@ -19,11 +19,15 @@ impl Plugin for Game {
                 check_for_collisions,
             ),
         );
+        app.add_systems(Update, update_scoreboard);
     }
 }
 
 #[derive(Resource, Deref, DerefMut)]
 struct Score(i32);
+
+#[derive(Component)]
+struct ScoreboardUi;
 
 const PADDLE_SIZE: Vec2 = Vec2::new(20., 120.);
 const PADDLE_COLOR: Color = Color::srgb(0.898, 0.784, 0.565);
@@ -43,6 +47,11 @@ const BALL_DIAMETER: f32 = 30.;
 const BALL_SPEED: f32 = 400.0;
 const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
 const BALL_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
+
+const SCOREBOARD_FONT_SIZE: f32 = 33.0;
+const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);
+const SCORE_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
+const TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.0);
 
 #[derive(Component)]
 struct Player;
@@ -176,6 +185,31 @@ fn setup(
         Ball,
         Velocity(INITIAL_BALL_DIRECTION.normalize() * BALL_SPEED),
     ));
+
+    commands
+        .spawn((
+            Text::new("Score: "),
+            TextFont {
+                font_size: SCOREBOARD_FONT_SIZE,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+            ScoreboardUi,
+            Node {
+                position_type: PositionType::Absolute,
+                top: SCOREBOARD_TEXT_PADDING,
+                left: SCOREBOARD_TEXT_PADDING,
+                ..default()
+            },
+        ))
+        .with_child((
+            TextSpan::default(),
+            TextFont {
+                font_size: SCOREBOARD_FONT_SIZE,
+                ..default()
+            },
+            TextColor(SCORE_COLOR),
+        ));
 }
 
 fn move_paddle(
@@ -264,8 +298,6 @@ fn check_for_collisions(
                 **score += 1;
             }
 
-            println!("{}", **score);
-
             let mut reflect_x = false;
             let mut reflect_y = false;
 
@@ -285,6 +317,14 @@ fn check_for_collisions(
             }
         }
     }
+}
+
+fn update_scoreboard(
+    score: Res<Score>,
+    score_root: Single<Entity, (With<ScoreboardUi>, With<Text>)>,
+    mut writer: TextUiWriter,
+) {
+    *writer.text(*score_root, 1) = score.to_string();
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
