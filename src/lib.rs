@@ -237,12 +237,20 @@ fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>
 fn check_for_collisions(
     mut score: ResMut<Score>,
     ball_query: Single<(&mut Velocity, &Transform), With<Ball>>,
-    collider_query: Query<(Entity, &Transform, Option<&PlayerGoal>), With<Collider>>,
+    collider_query: Query<
+        (
+            Entity,
+            &Transform,
+            Option<&PlayerGoal>,
+            Option<&ComputerGoal>,
+        ),
+        With<Collider>,
+    >,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
     let (mut ball_velocity, ball_transform) = ball_query.into_inner();
 
-    for (_, collider_transform, player_wall) in &collider_query {
+    for (_, collider_transform, player_goal, computer_goal) in &collider_query {
         let collision = ball_collision(
             BoundingCircle::new(ball_transform.translation.truncate(), BALL_DIAMETER / 2.),
             Aabb2d::new(
@@ -254,9 +262,14 @@ fn check_for_collisions(
         if let Some(collision) = collision {
             collision_events.send_default();
 
-            if player_wall.is_some() {
+            if player_goal.is_some() {
                 **score -= 1;
             }
+
+            if computer_goal.is_some() {
+                **score += 1;
+            }
+
             println!("{}", **score);
 
             let mut reflect_x = false;
