@@ -220,11 +220,11 @@ fn move_paddle(
     let mut direction = 0.0;
 
     if keyboard_input.pressed(KeyCode::ArrowDown) {
-        direction -= 1.0;
+        direction -= 0.5;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowUp) {
-        direction += 1.0;
+        direction += 0.5;
     }
 
     reposition_paddle(&mut paddle_transform, time, direction);
